@@ -7,19 +7,20 @@ from operator import attrgetter
 
 class Coord(object):
     
-    def __init__(self, line,x, y, z, pyth):
+    def __init__(self, line,x, y, z, a, pyth):
         """Constructeur de notre classe"""
         self.line = line
         self.x = x
         self.y = y
         self.z = z
+	self.a = a
         self.pyth = pyth
 
 def removeE( strInput ):
     chars = set('?')
     if any((c in chars) for c in strInput):
         strInput = 0
-    strInput = '%.3f' % round(float(strInput), 3)
+    strInput = '%.2f' % round(float(strInput), 2)
     return strInput;
 
 rawCoord_list = []
@@ -61,9 +62,9 @@ while True:
 
         #while there is no new z layer
         while (pz == pzBuffer):
-            rawCoord_list.append(Coord(pline,px,py,pz,math.hypot(px,py)))
+            rawCoord_list.append(Coord(pline,px,py,pz,0,math.hypot(px,py)))
     #       print "Coord: %u,%.3f,%.3f,%.3f,%.3f" % (pline,px,py,pz,pzBuffer)
-            coord = Coord(0,0,0,0,0)    
+            coord = Coord(0,0,0,0,0,0)    
             line = fo.readline()
             line = line.translate(None, '#=CARTESIAN_POINT Control Point Limit Line Origine();\'Lege')# remove character in the string
             pline, px, py, pz = line.split(",")# split string in float string
@@ -95,7 +96,25 @@ while True:
             # delete this point from the raw list   
             lindex = rawCoord_list.index(actualPoint)
             del rawCoord_list[lindex]
+
+        for index, coord in enumerate(orgCoord_list):
+            try:
+                orgCoord_list[index].a=(orgCoord_list[index].y-orgCoord_list[index-1].y)/(orgCoord_list[index].x-orgCoord_list[index-1].x)
+            except ZeroDivisionError:
+                del orgCoord_list[index]
+
+            try:
+                ca = orgCoord_list[index-1].a
+            except IndexError:
+                ca = max(rawCoord_list,key=attrgetter('pyth'))
+            try:    
+                if (orgCoord_list[index].a == ca):
+                    del orgCoord_list[index-1]
+            except IndexError:
+                caca=0
+
         orgCoord_list.append(orgCoord_list[0])# close the loop with the first point
+
         for coord in orgCoord_list:
             coord.x = coord.x/25.4
             coord.y = coord.y/25.4
