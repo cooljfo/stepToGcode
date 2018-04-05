@@ -28,7 +28,7 @@ pyth_list = []
 orgCoord_list = []
 
 #ouverture du fichier a decouper
-fo = open("E9_VOITURE_V2.stp", "r")
+fo = open("STEP.stp", "r")
 
 print "Name of the file: ", fo.name
 newLayerPos = 0
